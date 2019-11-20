@@ -1,16 +1,17 @@
 import xml.etree.ElementTree as ET
+import re
 
 def parseXML(inputfilepath):
    tree = ET.parse(open(inputfilepath))
 
    root = tree.getroot()
-
+   # print(ET.tostring(root, 'utf8').decode('utf8'))
    # different for score time-wise and score part-wise
    # first support basic implementation of one part read through measures
    # rest pitches are negative integers (-1)
-   default_tempo = 90
+   default_tempo = 120
    notes = []
-
+   pitch_table = get_table()
    # for scoring part-wise, returns of list of tuples of (note duration in seconds, pitches in Hz)
    tempo = default_tempo
    for part in root.iter('part'):
@@ -20,14 +21,15 @@ def parseXML(inputfilepath):
       time_signature = None
       for measure in part.findall('measure'):
          # measures have attributes {number} and children {attributes, note}
-         measure_attrib = measure.get('attributes')
+         measure_attrib = measure.find('attributes')
          # attributes have children {divisions, key {fifths}, time{beats, beat-type}}
          if measure_attrib != None:
             # divisions is divisions per quarter note
-            if measure_attrib.get('divisions') != None:
-               divisions = int(measure_attrib.get('divisions').text)
-            if measure_attrib.get('time') != None:
-               time_signature = (int(measure_attrib.get('beats').text), int(measure_attrib.get('divisions').text))
+            if measure_attrib.find('divisions') != None:
+               divisions = int(measure_attrib.find('divisions').text)
+            if measure_attrib.find('time') != None:
+               time = measure_attrib.find('time')
+               time_signature = (int(time.find('beats').text), int(time.find('beat-type').text))
             # if measure_attrib.get('key') != None:
                # key_signature = get_key_sig(int(measure_attrib.find('key').get('fifths').text), measure_attrib.find('key'.get('mode')).text)
          # apply time_signature settings on each note
@@ -35,30 +37,42 @@ def parseXML(inputfilepath):
             # note has attributes {attack and release} and children {chord (not using right now), pitch, rest, duration, tie}
             pitch = None
             value = None
-            if note.get('rest') != None:
+            if note is None:
+               pass
+            elif note.find('rest') != None:
                pitch = -1
                value = 'rest'
             else:
-               pitch_element = note.get('pitch')
-               value = pitch_element.get('step').text + pitch_element.get('alter').text
-               pitch = get_pitch(pitch_element.get('step').text, int(pitch_element.get('alter').text), int(pitch_element.get('octave').text))
+               pitch_element = note.find('pitch')
+               value = pitch_element.find('step').text
+               alter = 0
+               if pitch_element.find('alter') is not None:
+                  alter = int(pitch_element.find('alter').text)
+               pitch = get_pitch(value, alter, int(pitch_element.find('octave').text), pitch_table)
 
-            duration = get_duration(note.get('duration'), divisions, tempo, time_signature)
-            notes.append(pitch, duration)
+            duration = get_duration(int(note.find('duration').text), divisions, tempo, time_signature)
+            notes.append((pitch, duration))
+            print((pitch, duration), value)
 
 def get_duration(duration, divisions, tempo, timesig):
    return duration/divisions/tempo * 60
 
-def get_pitch(step, alter, octave_value):
+def get_pitch(step, alter, octave_value, pitch_table):
+   note_value = pitch_table[0].index(step) + alter
+   return pitch_table[octave_value][note_value]
+
+def get_table():
    pitch_table = []
    octave_notes = []
    with open('/Users/alexandersong/PycharmProjects/Astong/note_frequencies.txt') as file:
       lines = file.readlines()
-      octave_notes = [note.strip() for note in lines.pop(0).split(' ')]
+      octave_notes = [note.strip() for note in re.split(r'\t+', lines.pop(0))]
+      pitch_table.append(octave_notes)
       for octave in lines:
-         freq = [note.strip() for note in octave.split(' ')]
+         freq = [note.strip() for note in octave.split('\t')]
+         freq.pop(0)
          pitch_table.append(freq)
-   return pitch_table[octave_value][octave_notes.index(step) + alter]
+   return pitch_table
 
 """
 function not necessary right now because alter element of each pitch takes care of time signature, could be useful in error later because keysig is common mistake
@@ -73,9 +87,10 @@ def get_key_sig(num, mode):
       for i in range(-num):
          accidental_dict[flats_order[i][0]] = flats_order[i][1]
    return accidental_dict
-"""
+
 def main():
    parseXML('/Users/alexandersong/PycharmProjects/Astong/ten_notes.musicxml')
 
 if __name__ == '__main__':
    main()
+"""
