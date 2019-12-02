@@ -6,6 +6,7 @@ Today, many musicians face the dilemna of figuring out how to turn the page of t
 To run this code the aubio library is needed.
 ### Installation Instructions
 Installed aubio library through command line.
+Audiveris dependency, installation [detailed in the Audiveris handbook](https://github.com/Audiveris/audiveris/wiki/Installation)
 ### Run Instructions 
 To run this code input a sheet music file and run the sound processing for microphone audio detection. 
 ### Sample Output
