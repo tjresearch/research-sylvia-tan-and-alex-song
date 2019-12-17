@@ -1,7 +1,8 @@
 import subprocess
+from pathlib import Path
 class RunAudiveris:
    inputfilepath = None
-   outputfilepath = None
+   outputfilepath = str(Path.home()) + '/audiveris/'
 
    def __init__(self, ifp, ofp):
       self.inputfilepath = ifp
@@ -19,10 +20,9 @@ class RunAudiveris:
    def set_outputfilepath(self, ofp):
       self.outputfilepath = ofp
 
-   def makemxl(self):
-      print('gradle run -PcmdLineArgs=\"-batch,-export,-output,' + self.inputfilepath + ',--,' + self.outputfilepath + '\"')
+   def makexml(self):
       # needs your working directory of audiveris
-      return subprocess.check_output('gradle run -PcmdLineArgs=\"-batch,-export,-output,' + self.inputfilepath + ',--,' + self.outputfilepath + '\"', shell = True, cwd = '/Users/alexandersong/audiveris')
+      print(subprocess.check_output('gradle run -PcmdLineArgs=\"-batch,-export,-output,' + self.outputfilepath + ',--,' + self.inputfilepath + '\"', shell = True, cwd = str(Path.home()) + '/audiveris/'))
 
 
 
