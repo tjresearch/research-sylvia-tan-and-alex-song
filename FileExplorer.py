@@ -5,8 +5,8 @@ class FileExplorer:
    root = None
    def __init__(self, r):
       root = r
-      self.inputfilepath = filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = [("PDF files", '*.pdf'), ("Jpeg files", '*.jpeg'), ('ALL files', '*.*')])
-      self.outputfilepath = filedialog.asksaveasfilename(initialdir = "/",title = "Select file")
+      self.inputfilepath = filedialog.askopenfilename(initialdir = "/",title = "Select Input PDF", filetypes = [("PDF files", '*.pdf'), ("Jpeg files", '*.jpeg'), ('ALL files', '*.*')])
+      self.outputfilepath = filedialog.asksaveasfilename(initialdir = "/",title = "Select Output Location")
 
 
    def get_inputfilepath(self):
