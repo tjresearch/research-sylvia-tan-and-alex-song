@@ -14,45 +14,44 @@ def parseXML(inputfilepath):
    pitch_table = get_table()
    # for scoring part-wise, returns of list of tuples of (note duration in seconds, pitches in Hz)
    tempo = default_tempo
-   for part in root.iter('part'):
-      # part has attributes {id}
-      divisions = None
-      # key_signature = None
-      time_signature = None
-      for measure in part.findall('measure'):
-         # measures have attributes {number} and children {attributes, note}
-         measure_attrib = measure.find('attributes')
-         # attributes have children {divisions, key {fifths}, time{beats, beat-type}}
-         if measure_attrib != None:
-            # divisions is divisions per quarter note
-            if measure_attrib.find('divisions') != None:
-               divisions = int(measure_attrib.find('divisions').text)
-            if measure_attrib.find('time') != None:
-               time = measure_attrib.find('time')
-               time_signature = (int(time.find('beats').text), int(time.find('beat-type').text))
-            # if measure_attrib.get('key') != None:
-               # key_signature = get_key_sig(int(measure_attrib.find('key').get('fifths').text), measure_attrib.find('key'.get('mode')).text)
-         # apply time_signature settings on each note
-         for note in measure.findall('note'):
-            # note has attributes {attack and release} and children {chord (not using right now), pitch, rest, duration, tie}
-            pitch = None
-            value = None
-            if note is None:
-               pass
-            elif note.find('rest') != None:
-               pitch = -1
-               value = 'rest'
-            else:
-               pitch_element = note.find('pitch')
-               value = pitch_element.find('step').text
-               alter = 0
-               if pitch_element.find('alter') is not None:
-                  alter = int(pitch_element.find('alter').text)
-               pitch = get_pitch(value, alter, int(pitch_element.find('octave').text), pitch_table)
 
-            duration = get_duration(int(note.find('duration').text), divisions, tempo, time_signature)
-            notes.append((pitch, duration))
-            print((pitch, duration), value)
+   divisions = None
+   # key_signature = None
+   time_signature = None
+   for measure in root.findall('part/measure'):
+      # measures have attributes {number} and children {attributes, note}
+      measure_attrib = measure.find('attributes')
+      # attributes have children {divisions, key {fifths}, time{beats, beat-type}}
+      if measure_attrib != None:
+         # divisions is divisions per quarter note
+         if measure_attrib.find('divisions') != None:
+            divisions = int(measure_attrib.find('divisions').text)
+         if measure_attrib.find('time') != None:
+            time = measure_attrib.find('time')
+            time_signature = (int(time.find('beats').text), int(time.find('beat-type').text))
+         # if measure_attrib.get('key') != None:
+         # key_signature = get_key_sig(int(measure_attrib.find('key').get('fifths').text), measure_attrib.find('key'.get('mode')).text)
+      # apply time_signature settings on each note
+      for note in measure.findall('note'):
+         # note has attributes {attack and release} and children {chord (not using right now), pitch, rest, duration, tie}
+         pitch = None
+         value = None
+         if note is None:
+            pass
+         elif note.find('rest') != None:
+            pitch = -1
+            value = 'rest'
+         else:
+            pitch_element = note.find('pitch')
+            value = pitch_element.find('step').text
+            alter = 0
+            if pitch_element.find('alter') is not None:
+               alter = int(pitch_element.find('alter').text)
+            pitch = get_pitch(value, alter, int(pitch_element.find('octave').text), pitch_table)
+
+         duration = get_duration(int(note.find('duration').text), divisions, tempo, time_signature)
+         notes.append((pitch, duration))
+   return notes
 
 def get_duration(duration, divisions, tempo, timesig):
    return duration/divisions/tempo * 60
@@ -89,8 +88,7 @@ def get_key_sig(num, mode):
    return accidental_dict
 
 def main():
-   parseXML('/Users/alexandersong/PycharmProjects/Astong/ten_notes.musicxml')
-
+   parseXML('/Users/alexandersong/Documents/Senior Year/CS Research/Audiveris Test Files/Winter_Goal_Test_2.xml')
+"""
 if __name__ == '__main__':
    main()
-"""
